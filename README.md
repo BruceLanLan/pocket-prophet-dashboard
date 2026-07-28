@@ -20,6 +20,7 @@
 |---|---|
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 整体架构与全部已确认事实（自包含，实测依据齐全） |
 | [`docs/PLAN.md`](docs/PLAN.md) | 分阶段开发计划，每步带验证点，按风险排序 |
+| [`docs/OPTIONS.md`](docs/OPTIONS.md) | 改造路径的完整选项空间：BLE / NFC / 固件 dump 等尚未探索的通道 |
 | [`docs/evidence/`](docs/evidence/) | 原始实测日志，两份联网探测的对照 |
 
 **执行开发前请先读这两份文档**，尤其是 PLAN.md 的 Phase 0——它是阻断性的地基验证，会裁定四个仪表盘页面做还是不做，且需要付出一次不可逆的壁纸覆盖代价（用户已同意）。
