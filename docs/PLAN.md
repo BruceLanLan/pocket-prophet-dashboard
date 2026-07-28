@@ -73,6 +73,8 @@
    - 内置：推送前 `len(payload) > max_upload` 校验、内容哈希去重、最后成功负载缓存、失败指数退避
    - 每次推送前把源 PNG 存入 `history/YYYYMMDD-HHMMSS.png`
    - 验证点：对一张纯白图调 `convert`，返回长度在 40–200 之间（实测纯色图为 44–96 字符）
+   - **IP 漂移自愈**：设备没有 mDNS 主机名（实测 `dns-sd` 广播扫描无结果），也无反向 DNS，IP 由路由器 DHCP 分配、理论上会变，唯一稳定的标识是设备 MAC（本机实测为 `58:2a:bd:0a:98:c8`，会随硬件不同）。配置中同时存 `device_ip` 与 `device_mac`；`push()` 失败时执行 `arp -a` 扫描局域网，找到 MAC 匹配的行解析出新 IP，更新配置后重试一次
+     - 验证点：手动把配置里的 IP 改错，触发一次推送，观察日志显示"IP 已更新"并推送成功
 2. 实现 `renderer/base.py`：画布常量（200×200）、四级灰阶调色板 `{0,85,170,255}`、字体加载（`/System/Library/Fonts/STHeiti Medium.ttc`）、文本按字宽截断、分隔线等原语
    - 验证点：绘制一张含 13px 中文的测试图，解码 `COMPRESS_RENDER` 后目视可读
 3. 加入"内容未变则跳过推送"的单元测试
