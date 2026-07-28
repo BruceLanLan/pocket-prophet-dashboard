@@ -1,0 +1,31 @@
+# 探测 B：用户手动退出"更换壁纸"界面之后
+# 每 60 秒一次 ping + GET /wallpaper/info，共 25 次，覆盖 20:40–21:05
+# ping_rc=2 表示无响应，http=000 表示无法建立连接
+# 结论：25/25 全部不可达。设备退出该界面后即离开局域网。
+
+20:40:05 ping_rc=2 http=000
+20:41:09 ping_rc=2 http=000
+20:42:13 ping_rc=2 http=000
+20:43:16 ping_rc=2 http=000
+20:44:20 ping_rc=2 http=000
+20:45:22 ping_rc=2 http=000
+20:46:26 ping_rc=2 http=000
+20:47:28 ping_rc=2 http=000
+20:48:32 ping_rc=2 http=000
+20:49:36 ping_rc=2 http=000
+20:50:40 ping_rc=2 http=000
+20:51:42 ping_rc=2 http=000
+20:52:46 ping_rc=2 http=000
+20:53:50 ping_rc=2 http=000
+20:54:54 ping_rc=2 http=000
+20:55:58 ping_rc=2 http=000
+20:57:02 ping_rc=2 http=000
+20:58:07 ping_rc=2 http=000
+20:59:11 ping_rc=2 http=000
+21:00:15 ping_rc=2 http=000
+21:01:19 ping_rc=2 http=000
+21:02:23 ping_rc=2 http=000
+21:03:27 ping_rc=2 http=000
+21:04:31 ping_rc=2 http=000
+21:05:35 ping_rc=2 http=000
+IDLE_POLL_DONE
