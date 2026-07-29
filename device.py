@@ -33,6 +33,15 @@ STATE_PATH = os.path.join(os.path.dirname(__file__), "state.json")
 
 UNREACHABLE_HINT = "设备当前不在线，请先在设备上打开「更换壁纸」界面"
 
+# 局域网请求必须绕开环境代理（本机有 ALL_PROXY 指向一个 SOCKS 代理）。
+# 注意：requests 的 `proxies={"http": None}` 参数**不会**真正禁用环境代理——
+# 源码里判断 `if proxy is None: 继续查环境变量`，无法区分"显式传 None"和
+# "没传这个 key"，所以那个写法是无效的，实测会把局域网请求错误地导向
+# SOCKS 代理导致连接失败。真正等效于 `curl --noproxy '*'` 的写法是
+# `Session(trust_env=False)`，彻底跳过所有环境变量代理配置。
+_lan_session = requests.Session()
+_lan_session.trust_env = False
+
 
 class ConvertError(Exception):
     """云端转换接口失败（多次重试后仍失败）。"""
@@ -45,7 +54,7 @@ def _wallpaper_url(ip: str, path: str = "/wallpaper/info") -> str:
 def info(ip: str) -> dict | None:
     """探活并读取设备状态。设备不可达时返回 None，不抛异常。"""
     try:
-        r = requests.get(_wallpaper_url(ip), timeout=PROBE_TIMEOUT, proxies={"http": None, "https": None})
+        r = _lan_session.get(_wallpaper_url(ip), timeout=PROBE_TIMEOUT)
         r.raise_for_status()
         return r.json()
     except requests.RequestException:
@@ -150,12 +159,11 @@ def push(img: Image.Image, payload: str, ip: str, force: bool = False) -> dict:
     _save_history(img)
 
     try:
-        r = requests.post(
+        r = _lan_session.post(
             _wallpaper_url(ip, "/wallpaper"),
             data=payload,
             headers={"Content-Type": "application/octet-stream"},
             timeout=PUSH_TIMEOUT,
-            proxies={"http": None, "https": None},
         )
     except requests.RequestException as e:
         return {"ok": False, "reason": "unreachable", "hint": UNREACHABLE_HINT}
