@@ -306,3 +306,19 @@ strings firmware_backup.bin | grep -iE 'http|mindreset|wallpaper|ota'
 **没有找到任何证据表明设备能主动读取外部 NFC 标签。** 这不是确凿定论（没查到官方技术文档），但现有的唯一线索指向"设备是卡，不是读卡器"，与 docs/OPTIONS.md 早先列出的两种可能中较无价值的那一种（"设备只是被读取的标签"）吻合。
 
 **结论**：不再优先投入这条路。用户已决定改走蓝牙翻页键方案（§1.6 已确认技术可行）。如果日后想重新确认，最直接的办法是翻设备自身屏幕菜单，看有没有"扫一扫/读卡"之类的选项——而不是继续搜网络资料。
+
+---
+
+## 【2026-07-29】蓝牙原始按键读取：卡在系统权限，暂缓
+
+技术路线本身已经打通大半：装了 `hidapi`(brew) + Python `hid` 库(venv, python3.12——系统自带的 CommandLineTools python3.9 被 SIP 加固运行时挡住了 `DYLD_LIBRARY_PATH`，换 Homebrew 的 python3.12 后原生库链接正常)，也在设备列表里精确定位到了"Rand/0 Pager"的三个 HID 接口(标准键盘 / 多媒体键 / 厂商私有通道 `usage_page=65280`，跟之前解码的 HID 描述符完全对上)。
+
+卡点在最后一步：读取原始输入报告需要 macOS「输入监控」(Input Monitoring)权限，报错 `privilege violation`。追了进程树，发现这个开发会话本身跑在 **Ghostty.app** 里，权限要加到这个 App 上；但加完权限后需要**完全退出重启 Ghostty**才能生效，而退出 Ghostty 会连带杀掉这整个会话——用户选择先不为了这个功能重启，回头再弄。
+
+**结论**：技术可行性已经验证到只差临门一脚(拿到权限就能读原始报告)，不是死路，只是被一个环境限制卡住，等打开新会话时(此时 Ghostty 已经是重启过的状态)直接接着测就行——步骤都在上面，不用重新摸索：
+1. `source .venv/bin/activate`
+2. 扫 `hid.enumerate()` 找 `product_string` 含"Rand/0 Pager"的三条记录，拿 `path`
+3. `hid.Device(path=...)` 打开，`read(64, timeout=200)` 循环读，用户按键
+4. 如果还是 `privilege violation`，说明权限依然没生效，检查「系统设置→隐私与安全性→输入监控」里 Ghostty 的开关是否真的是开启状态
+
+当前优先级：不阻塞主线开发，先按 PLAN.md 继续做 Phase 3。
