@@ -32,6 +32,9 @@ h1{font-size:22px;margin:4px 0 14px}
 .smallbtn:disabled{opacity:.5;cursor:not-allowed}
 .pagepreview{margin-top:10px;text-align:center}
 .pagepreview img{width:160px;height:160px;image-rendering:pixelated;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.16)}
+.autostatus{font-size:13px;color:#6e6e73;display:flex;align-items:center;gap:6px}
+.autostatus .armdot{width:8px;height:8px;border-radius:50%;background:#d1d1d6}
+.autostatus .armdot.on{background:#34c759}
 </style>
 </head>
 <body>
@@ -41,6 +44,7 @@ h1{font-size:22px;margin:4px 0 14px}
     <span class="dot" id="dot"></span>
     <span id="statusText">检查设备状态…</span>
   </div>
+  <div class="autostatus" id="autoStatus"></div>
   <button class="btn" id="divineBtn" onclick="divine()">摇卦</button>
   <div class="result" id="result" style="display:none"></div>
 </div>
@@ -195,8 +199,37 @@ async function pushPage(page){
   }
 }
 
+function fmtTime(iso){
+  if(!iso) return null;
+  const d = new Date(iso);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+async function refreshAutoStatus(){
+  try{
+    const r = await fetch('/api/scheduler_status');
+    const j = await r.json();
+    const box = document.getElementById('autoStatus');
+    if(!j.armed){
+      box.innerHTML = `<span class="armdot"></span> 自动推送未布防（在设置页开启）`;
+      return;
+    }
+    let extra = '';
+    if(j.last_push_at){
+      const ok = j.last_push_ok;
+      extra = ` · 上次 ${fmtTime(j.last_push_at)} ${j.last_push_page || ''} ${ok ? '✓' : '✗'}`;
+    }
+    const next = j.next_push_at ? `下次约 ${fmtTime(j.next_push_at)}` : '';
+    box.innerHTML = `<span class="armdot on"></span> 自动推送已布防 · ${next}${extra}`;
+  }catch(e){
+    // 静默失败，不打扰主界面
+  }
+}
+
 refreshStatus();
+refreshAutoStatus();
 setInterval(refreshStatus, 8000);
+setInterval(refreshAutoStatus, 8000);
 </script>
 </body>
 </html>

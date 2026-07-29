@@ -9,6 +9,7 @@ from flask import Flask, jsonify, render_template, request
 
 import config
 import device
+import scheduler
 from providers.liuyao import cast_hexagram
 from providers import ccusage
 from providers import news as news_provider
@@ -72,10 +73,18 @@ def api_config():
         return jsonify(config.load())
 
     body = request.get_json(force=True, silent=True) or {}
-    allowed = {"device_ip", "device_mac", "weather_city", "stock_symbols", "news_sources", "enabled_pages"}
+    allowed = {
+        "device_ip", "device_mac", "weather_city", "stock_symbols", "news_sources", "enabled_pages",
+        "auto_push_enabled", "auto_push_interval_minutes", "auto_push_pages",
+    }
     updates = {k: v for k, v in body.items() if k in allowed}
     cfg = config.update(**updates)
     return jsonify(cfg)
+
+
+@app.route("/api/scheduler_status")
+def api_scheduler_status():
+    return jsonify(scheduler.get_state())
 
 
 @app.route("/api/status")
@@ -178,4 +187,5 @@ def api_divine():
 
 
 if __name__ == "__main__":
+    scheduler.start({key: fn for key, (_, fn) in PAGES.items()})
     app.run(host="0.0.0.0", port=5151, debug=False)

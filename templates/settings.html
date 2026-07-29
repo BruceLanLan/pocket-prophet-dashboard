@@ -18,6 +18,14 @@ input[type=text]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;borde
 .msg.ok{background:#e8f8ea;color:#248a3d}
 .msg.err{background:#fdecea;color:#d70015}
 .back{display:inline-block;margin-bottom:10px;color:#6e6e73;font-size:14px;text-decoration:none}
+.switch{display:flex;align-items:center;justify-content:space-between}
+.switch input[type=checkbox]{width:44px;height:26px;-webkit-appearance:none;appearance:none;background:#d1d1d6;border-radius:999px;position:relative;cursor:pointer;outline:none;transition:background .15s}
+.switch input[type=checkbox]:checked{background:#34c759}
+.switch input[type=checkbox]::before{content:'';position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch input[type=checkbox]:checked::before{left:20px}
+.warn{font-size:12px;color:#a15c00;background:#fff6e5;border-radius:8px;padding:8px 10px;margin-top:10px;line-height:1.5}
+.checkrow{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px}
+input[type=number]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:12px;background:#fbfaf7;color:#1d1d1f;font-size:15px;padding:12px}
 </style>
 </head>
 <body>
@@ -35,15 +43,37 @@ input[type=text]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;borde
   <div class="field">
     <label>天气城市</label>
     <input type="text" id="weather_city">
-    <div class="hint">天气页尚未实现（Phase 4），这里先存着</div>
   </div>
   <div class="field">
     <label>股票清单（逗号分隔）</label>
     <input type="text" id="stock_symbols">
-    <div class="hint">行情页尚未实现（Phase 4），这里先存着</div>
   </div>
   <button class="btn" onclick="saveConfig()">保存</button>
   <div id="msg"></div>
+</div>
+
+<div class="card">
+  <h1 style="font-size:17px;margin-top:0">🔁 自动推送（停驻模式）</h1>
+  <div class="field switch">
+    <label style="margin:0">布防（开启后按周期自动推送）</label>
+    <input type="checkbox" id="auto_push_enabled">
+  </div>
+  <div class="warn">
+    仅在设备<b>持续停留</b>在"更换壁纸"界面时才有效——退出界面设备就离线，自动推送无法送达。布防期间不要用官方页面传自己的图，会被自动推送覆盖。设备没有电量接口，长时间停驻的耗电影响未知。
+  </div>
+  <div class="field">
+    <label>推送周期（分钟，最低 5）</label>
+    <input type="number" id="auto_push_interval_minutes" min="5" max="60">
+  </div>
+  <div class="field">
+    <label>轮换哪些页面</label>
+    <div class="checkrow"><input type="checkbox" value="weather" class="pagecheck"> 天气</div>
+    <div class="checkrow"><input type="checkbox" value="stocks" class="pagecheck"> 行情</div>
+    <div class="checkrow"><input type="checkbox" value="news" class="pagecheck"> 要闻</div>
+    <div class="checkrow"><input type="checkbox" value="usage" class="pagecheck"> Token 用量</div>
+  </div>
+  <button class="btn" onclick="saveConfig()">保存</button>
+  <div id="msg2"></div>
 </div>
 
 <script>
@@ -54,15 +84,23 @@ async function loadConfig(){
   document.getElementById('device_mac').value = cfg.device_mac || '';
   document.getElementById('weather_city').value = cfg.weather_city || '';
   document.getElementById('stock_symbols').value = (cfg.stock_symbols || []).join(', ');
+  document.getElementById('auto_push_enabled').checked = !!cfg.auto_push_enabled;
+  document.getElementById('auto_push_interval_minutes').value = cfg.auto_push_interval_minutes || 10;
+  const pages = new Set(cfg.auto_push_pages || []);
+  document.querySelectorAll('.pagecheck').forEach(el => { el.checked = pages.has(el.value); });
 }
 
 async function saveConfig(){
+  const pages = Array.from(document.querySelectorAll('.pagecheck:checked')).map(el => el.value);
   const body = {
     device_ip: document.getElementById('device_ip').value.trim(),
     device_mac: document.getElementById('device_mac').value.trim(),
     weather_city: document.getElementById('weather_city').value.trim(),
     stock_symbols: document.getElementById('stock_symbols').value
       .split(',').map(s => s.trim()).filter(Boolean),
+    auto_push_enabled: document.getElementById('auto_push_enabled').checked,
+    auto_push_interval_minutes: Math.max(5, parseInt(document.getElementById('auto_push_interval_minutes').value) || 10),
+    auto_push_pages: pages,
   };
   const msg = document.getElementById('msg');
   try{
@@ -73,6 +111,7 @@ async function saveConfig(){
     });
     if(r.ok){
       msg.innerHTML = '<div class="msg ok">已保存</div>';
+      document.getElementById('msg2').innerHTML = '<div class="msg ok">已保存</div>';
     } else {
       msg.innerHTML = '<div class="msg err">保存失败</div>';
     }

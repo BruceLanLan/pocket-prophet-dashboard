@@ -15,6 +15,13 @@ DEFAULTS = {
     "weather_city": "深圳",
     "stock_symbols": ["AAPL", "NVDA"],  # 用户 2026-07-28 确认的初始清单
     "news_sources": [],  # Phase 4 实现 providers/news.py 时补默认源
+    # Phase 7 自动推送（停驻模式，见 docs/PHASE0_FINDINGS.md）。
+    # 默认关闭——必须由用户显式布防，理由见 ARCHITECTURE.md §3.1：
+    # 自动推送可能覆盖用户自己用官方页面传图的操作。
+    "auto_push_enabled": False,
+    "auto_push_interval_minutes": 10,
+    "auto_push_pages": ["weather", "stocks", "news", "usage"],  # 不含摇卦，见 PLAN-v2.md Phase 7
+    "_auto_push_last_page": None,  # 内部轮换状态，不暴露给设置页
 }
 
 
