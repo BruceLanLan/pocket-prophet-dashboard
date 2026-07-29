@@ -47,6 +47,23 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/settings")
+def settings_page():
+    return render_template("settings.html")
+
+
+@app.route("/api/config", methods=["GET", "POST"])
+def api_config():
+    if request.method == "GET":
+        return jsonify(config.load())
+
+    body = request.get_json(force=True, silent=True) or {}
+    allowed = {"device_ip", "device_mac", "weather_city", "stock_symbols", "news_sources", "enabled_pages"}
+    updates = {k: v for k, v in body.items() if k in allowed}
+    cfg = config.update(**updates)
+    return jsonify(cfg)
+
+
 @app.route("/api/status")
 def api_status():
     cfg = config.load()

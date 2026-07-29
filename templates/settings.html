@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>口袋先知 · 设置</title>
+<style>
+body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#f5f3ee;color:#1d1d1f;margin:0;padding:18px;max-width:480px;margin-left:auto;margin-right:auto}
+h1{font-size:22px;margin:4px 0 14px}
+.card{background:#fff;padding:18px;border-radius:18px;margin:12px 0;box-shadow:0 8px 24px rgba(0,0,0,.07)}
+.field{margin:14px 0}
+.field label{display:block;font-size:13px;color:#6e6e73;margin-bottom:6px}
+.field .hint{font-size:12px;color:#8e8e93;margin-top:4px}
+input[type=text]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:12px;background:#fbfaf7;color:#1d1d1f;font-size:15px;padding:12px}
+.btn{width:100%;background:#111;color:#fff;padding:15px;text-align:center;border:0;border-radius:12px;font-size:17px;cursor:pointer;margin-top:8px}
+.btn-light{background:#ebe7df;color:#4b4035}
+.msg{font-size:13px;text-align:center;padding:8px;border-radius:8px;margin-top:12px}
+.msg.ok{background:#e8f8ea;color:#248a3d}
+.msg.err{background:#fdecea;color:#d70015}
+.back{display:inline-block;margin-bottom:10px;color:#6e6e73;font-size:14px;text-decoration:none}
+</style>
+</head>
+<body>
+<a class="back" href="/">← 返回</a>
+<h1>⚙️ 设置</h1>
+<div class="card">
+  <div class="field">
+    <label>设备 IP</label>
+    <input type="text" id="device_ip" placeholder="192.168.1.100">
+  </div>
+  <div class="field">
+    <label>设备 MAC（IP 变了会按这个自动找回，可留空）</label>
+    <input type="text" id="device_mac" placeholder="58:2a:bd:0a:98:c8">
+  </div>
+  <div class="field">
+    <label>天气城市</label>
+    <input type="text" id="weather_city">
+    <div class="hint">天气页尚未实现（Phase 4），这里先存着</div>
+  </div>
+  <div class="field">
+    <label>股票清单（逗号分隔）</label>
+    <input type="text" id="stock_symbols">
+    <div class="hint">行情页尚未实现（Phase 4），这里先存着</div>
+  </div>
+  <button class="btn" onclick="saveConfig()">保存</button>
+  <div id="msg"></div>
+</div>
+
+<script>
+async function loadConfig(){
+  const r = await fetch('/api/config');
+  const cfg = await r.json();
+  document.getElementById('device_ip').value = cfg.device_ip || '';
+  document.getElementById('device_mac').value = cfg.device_mac || '';
+  document.getElementById('weather_city').value = cfg.weather_city || '';
+  document.getElementById('stock_symbols').value = (cfg.stock_symbols || []).join(', ');
+}
+
+async function saveConfig(){
+  const body = {
+    device_ip: document.getElementById('device_ip').value.trim(),
+    device_mac: document.getElementById('device_mac').value.trim(),
+    weather_city: document.getElementById('weather_city').value.trim(),
+    stock_symbols: document.getElementById('stock_symbols').value
+      .split(',').map(s => s.trim()).filter(Boolean),
+  };
+  const msg = document.getElementById('msg');
+  try{
+    const r = await fetch('/api/config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    if(r.ok){
+      msg.innerHTML = '<div class="msg ok">已保存</div>';
+    } else {
+      msg.innerHTML = '<div class="msg err">保存失败</div>';
+    }
+  }catch(e){
+    msg.innerHTML = `<div class="msg err">网络错误：${e}</div>`;
+  }
+}
+
+loadConfig();
+</script>
+</body>
+</html>

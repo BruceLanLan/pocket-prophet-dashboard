@@ -1,5 +1,8 @@
 {
   "device_ip": "192.168.1.100",
   "device_mac": "58:2a:bd:0a:98:c8",
-  "divination_pin_minutes": 0
+  "enabled_pages": ["divination"],
+  "weather_city": "深圳",
+  "stock_symbols": ["AAPL", "NVDA"],
+  "news_sources": []
 }
