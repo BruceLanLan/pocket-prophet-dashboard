@@ -10,10 +10,11 @@ from flask import Flask, jsonify, render_template, request
 import config
 import device
 from providers.liuyao import cast_hexagram
+from providers import ccusage
 from providers import news as news_provider
 from providers import stocks as stocks_provider
 from providers import weather as weather_provider
-from renderer import divination, news, stocks, weather
+from renderer import divination, news, stocks, usage, weather
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("pocket-prophet")
@@ -27,6 +28,7 @@ PAGES = {
     "weather": ("天气", lambda cfg: weather.render(weather_provider.fetch(cfg["weather_city"]))),
     "stocks": ("行情", lambda cfg: stocks.render(stocks_provider.fetch(cfg["stock_symbols"]))),
     "news": ("要闻", lambda cfg: news.render(news_provider.fetch())),
+    "usage": ("用量", lambda cfg: usage.render(ccusage.summarize())),
 }
 
 

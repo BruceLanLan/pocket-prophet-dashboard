@@ -5,3 +5,4 @@ __pycache__/
 history/*.png
 config.json
 state.json
+ccusage_cache.json
