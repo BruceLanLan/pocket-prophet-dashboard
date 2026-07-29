@@ -85,6 +85,7 @@ pocket-prophet-dashboard/
 |---|---|
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 设备接口全貌、云端 API 契约、面板规格、负载预算——全部标注了实测依据，不是推测 |
 | [`docs/PLAN.md`](docs/PLAN.md) | 分阶段开发记录（Phase 1–5 已完成，见下方状态）；Phase 0 待验证 |
+| [`docs/PLAN-v2.md`](docs/PLAN-v2.md) | 新一轮深化计划：自动推送、奇门遁甲、各页视觉与信息密度优化 |
 | [`docs/OPTIONS.md`](docs/OPTIONS.md) | 蓝牙 / NFC / USB / 固件等其他改造路径的探索记录（多数已证实是死路，存档备查，不是待办） |
 | [`docs/evidence/`](docs/evidence/) | 设备联网时机的原始实测日志 |
 
