@@ -14,6 +14,7 @@ DEFAULTS = {
     "enabled_pages": ["divination"],  # Phase 4/5 陆续加入 weather/stocks/news/usage
     "weather_city": "深圳",
     "stock_symbols": ["AAPL", "NVDA"],  # 用户 2026-07-28 确认的初始清单
+    "stocks_view": "overview",  # "overview"(多只概览) 或 "detail"(单只详情，取清单第一只)
     "news_sources": [],  # Phase 4 实现 providers/news.py 时补默认源
     # Phase 7 自动推送（停驻模式，见 docs/PHASE0_FINDINGS.md）。
     # 默认关闭——必须由用户显式布防，理由见 ARCHITECTURE.md §3.1：

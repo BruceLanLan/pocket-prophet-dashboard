@@ -26,6 +26,7 @@ input[type=text]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;borde
 .warn{font-size:12px;color:#a15c00;background:#fff6e5;border-radius:8px;padding:8px 10px;margin-top:10px;line-height:1.5}
 .checkrow{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px}
 input[type=number]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:12px;background:#fbfaf7;color:#1d1d1f;font-size:15px;padding:12px}
+select{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:12px;background:#fbfaf7;color:#1d1d1f;font-size:15px;padding:12px}
 </style>
 </head>
 <body>
@@ -47,6 +48,13 @@ input[type=number]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;bor
   <div class="field">
     <label>股票清单（逗号分隔）</label>
     <input type="text" id="stock_symbols">
+  </div>
+  <div class="field">
+    <label>行情版式</label>
+    <select id="stocks_view">
+      <option value="overview">概览（多只，各配一条分时线）</option>
+      <option value="detail">详情（清单第一只占满整屏）</option>
+    </select>
   </div>
   <button class="btn" onclick="saveConfig()">保存</button>
   <div id="msg"></div>
@@ -85,6 +93,7 @@ async function loadConfig(){
   document.getElementById('device_mac').value = cfg.device_mac || '';
   document.getElementById('weather_city').value = cfg.weather_city || '';
   document.getElementById('stock_symbols').value = (cfg.stock_symbols || []).join(', ');
+  document.getElementById('stocks_view').value = cfg.stocks_view || 'overview';
   document.getElementById('auto_push_enabled').checked = !!cfg.auto_push_enabled;
   document.getElementById('auto_push_interval_minutes').value = cfg.auto_push_interval_minutes || 10;
   const pages = new Set(cfg.auto_push_pages || []);
@@ -99,6 +108,7 @@ async function saveConfig(){
     weather_city: document.getElementById('weather_city').value.trim(),
     stock_symbols: document.getElementById('stock_symbols').value
       .split(',').map(s => s.trim()).filter(Boolean),
+    stocks_view: document.getElementById('stocks_view').value,
     auto_push_enabled: document.getElementById('auto_push_enabled').checked,
     auto_push_interval_minutes: Math.max(5, parseInt(document.getElementById('auto_push_interval_minutes').value) || 10),
     auto_push_pages: pages,

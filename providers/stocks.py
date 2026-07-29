@@ -1,6 +1,10 @@
 """行情数据源：Yahoo Finance 公开 chart 接口，不需要 API key。
 
 必须带浏览器 User-Agent，否则会被拒绝（已实测：不带 UA 返回 429）。
+
+下次财报日期本想一并加（docs/PLAN-v2.md Phase 10），但那需要
+v10/finance/quoteSummary 接口，实测无认证访问返回 401 Unauthorized/
+Invalid Crumb——不去处理认证绕过，按计划里"若接口可得"的但书直接跳过。
 """
 import requests
 
@@ -29,9 +33,13 @@ def _fetch_one(symbol: str) -> dict:
 
     return {
         "symbol": symbol,
+        "name": meta.get("shortName", symbol),
         "price": price,
         "change_pct": change_pct,
         "closes": closes,
+        "volume": meta.get("regularMarketVolume"),
+        "week52_high": meta.get("fiftyTwoWeekHigh"),
+        "week52_low": meta.get("fiftyTwoWeekLow"),
     }
 
 

@@ -23,12 +23,20 @@ log = logging.getLogger("pocket-prophet")
 
 app = Flask(__name__)
 
+def _render_stocks(cfg: dict):
+    """行情页有两种版式（Phase 10），在设置页里选：概览（多只）或详情（单只）。"""
+    quotes = stocks_provider.fetch(cfg["stock_symbols"])
+    if cfg.get("stocks_view") == "detail" and quotes:
+        return stocks.render_detail(quotes[0])
+    return stocks.render(quotes)
+
+
 # 配置驱动的内容页：page key -> (中文名, cfg -> PIL.Image)。摇卦不在这里——
 # 它是每次随机的一次性动作，"预览不推送"这个概念对它不适用，走独立的
 # /api/divine（见下方，Phase 2 已验证过真机）。
 PAGES = {
     "weather": ("天气", lambda cfg: weather.render(weather_provider.fetch(cfg["weather_city"]))),
-    "stocks": ("行情", lambda cfg: stocks.render(stocks_provider.fetch(cfg["stock_symbols"]))),
+    "stocks": ("行情", _render_stocks),
     "news": ("要闻", lambda cfg: news.render(news_provider.fetch())),
     "usage": ("用量", lambda cfg: usage.render(ccusage.summarize())),
     "qimen": ("奇门遁甲", lambda cfg: qimen.render(qimen_provider.cast())),
@@ -76,7 +84,7 @@ def api_config():
 
     body = request.get_json(force=True, silent=True) or {}
     allowed = {
-        "device_ip", "device_mac", "weather_city", "stock_symbols", "news_sources", "enabled_pages",
+        "device_ip", "device_mac", "weather_city", "stock_symbols", "stocks_view", "news_sources", "enabled_pages",
         "auto_push_enabled", "auto_push_interval_minutes", "auto_push_pages",
     }
     updates = {k: v for k, v in body.items() if k in allowed}
