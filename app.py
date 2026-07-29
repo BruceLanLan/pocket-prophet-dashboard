@@ -13,9 +13,10 @@ import scheduler
 from providers.liuyao import cast_hexagram
 from providers import ccusage
 from providers import news as news_provider
+from providers import qimen as qimen_provider
 from providers import stocks as stocks_provider
 from providers import weather as weather_provider
-from renderer import divination, news, stocks, usage, weather
+from renderer import divination, news, qimen, stocks, usage, weather
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("pocket-prophet")
@@ -30,6 +31,7 @@ PAGES = {
     "stocks": ("行情", lambda cfg: stocks.render(stocks_provider.fetch(cfg["stock_symbols"]))),
     "news": ("要闻", lambda cfg: news.render(news_provider.fetch())),
     "usage": ("用量", lambda cfg: usage.render(ccusage.summarize())),
+    "qimen": ("奇门遁甲", lambda cfg: qimen.render(qimen_provider.cast())),
 }
 
 

@@ -1,9 +1,9 @@
 # pocket-prophet-dashboard
 
-给"口袋先知"墨水屏做的功能扩展：一个本地 Web 服务，让这块 200×200 的小屏幕显示自定义内容——**摇一卦**、看天气、看股票行情、看今日要闻、看 Claude Code 的 token 消耗。全部通过设备官方已经暴露的能力实现，不逆向、不刷机（详见下方「定位」）。
+给"口袋先知"墨水屏做的功能扩展：一个本地 Web 服务，让这块 200×200 的小屏幕显示自定义内容——**摇一卦**、起一盘**奇门遁甲**、看天气、看股票行情、看今日要闻、看 Claude Code 的 token 消耗。全部通过设备官方已经暴露的能力实现，不逆向、不刷机（详见下方「定位」）。
 
 <p align="center">
-<img src="docs/img/divination.png" width="140"> <img src="docs/img/weather.png" width="140"> <img src="docs/img/stocks.png" width="140"> <img src="docs/img/news.png" width="140"> <img src="docs/img/usage.png" width="140">
+<img src="docs/img/divination.png" width="130"> <img src="docs/img/qimen.png" width="130"> <img src="docs/img/weather.png" width="130"> <img src="docs/img/stocks.png" width="130"> <img src="docs/img/news.png" width="130"> <img src="docs/img/usage.png" width="130">
 </p>
 
 ---
@@ -42,6 +42,7 @@ python3 app.py
 | 📈 **行情** | 数据源 Yahoo Finance 公开接口，股票清单在设置页里改，每只股票配一条当日分时走势线 |
 | 📰 **要闻** | 数据源今日头条热榜 |
 | 📊 **Token 用量** | 解析本机 Claude Code 的本地转录文件，展示今日 token 消耗、近 5 小时窗口、按模型拆分、近似成本估算。**这不是官方订阅额度百分比**——那个数据本地拿不到，这里给的是本地转录统计出的用量，别混着看 |
+| 🔯 **奇门遁甲** | 按当前时间起盘（节气定局/阴阳遁/值符值使/三盘，复用同一作者 mingli-skill 项目的排盘引擎），3×3 九宫格显示门/星/干支，粗框标出值符宫 |
 
 摇卦是"推了就看"的一次性动作；天气/行情/新闻/用量四页支持先"预览"（只调用转换接口生成预览图，**不会**真的推给设备）再决定要不要"推送"。
 
@@ -112,7 +113,8 @@ pocket-prophet-dashboard/
 - ✅ Phase 5 Token 用量
 - ✅ Phase 6 停驻模式验证——确认设备停在传壁纸界面时屏幕显示壁纸内容，见 `docs/PHASE0_FINDINGS.md`
 - ✅ Phase 7 自动推送——布防开关、周期轮换、默认关闭，见上方「自动推送」
-- 🔜 Phase 8–12（`docs/PLAN-v2.md`）：奇门遁甲、天气图标、行情增强、要闻自定义源、用量页重设计
+- ✅ Phase 8 奇门遁甲
+- 🔜 Phase 9–12（`docs/PLAN-v2.md`）：天气图标、行情增强、要闻自定义源、用量页重设计
 
 ## 定位：扩展，不是破解
 
