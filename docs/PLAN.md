@@ -115,7 +115,7 @@
 1. `providers/liuyao.py`：纯计算模块，三枚铜钱抛六次
    - **用 `secrets` 而非 `random`**
    - 输出：六爻（老阴/少阳/少阴/老阳）、本卦、变卦、动爻位置
-   - 可复用 `~/.agents/skills/mingli/scripts/meihua_engine.py` 的 `HEXAGRAM_NAMES`、`NUM_BA_GUA`、`GUA_WUXING` 三张静态表；**不要复用其生克逻辑**（该处两个分支条件写成了等价表达式，第二支永远不可达）
+   - 可复用 `~/.agents/skills/mingli/scripts/meihua_engine.py` 的 `HEXAGRAM_NAMES`、`NUM_BA_GUA`、`GUA_WUXING`、`GUA_READING` 四张静态表（`GUA_READING` 完整覆盖 64 卦，可直接当短判断文案用，见步骤 5）；**不要复用其生克逻辑**（该处两个分支条件写成了等价表达式，第二支永远不可达）
    - 验证点：起卦 10000 次，各爻的老阴/少阳/少阴/老阳分布接近 1:3:3:1（三钱法理论分布），打印实际统计
 2. 最小 Web 服务（Flask 或 FastAPI）：一个页面、一个"摇卦"按钮、一个设备在线状态指示
    - 绑定 `0.0.0.0` 以便手机访问
@@ -125,8 +125,8 @@
    - 验证点：`COMPRESS_RENDER` 中六条爻线清晰可辨，阴阳可区分
 4. 串起来推真机
    - 验证点：设备在线时点"摇卦"，设备显示卦象，与 `COMPRESS_RENDER` 一致
-5. 补全 64 卦短判断文案（`meihua_engine.py` 仅覆盖约 10 卦，其余走兜底串）
-   - 验证点：随机起卦 20 次，均有非兜底文案
+5. 短判断文案直接复用 `meihua_engine.py` 的 `GUA_READING`（完整覆盖 64 卦，逐条核对过，不是之前记的"仅约 10 卦"，那是读文件时看漏的）。**不需要另写文案**，只需按本卦的卦名去查表
+   - 验证点：随机起卦 20 次，均能查到非空文案
 
 **可选增强（不要因它阻塞交付）**：手机 DeviceMotion 摇一摇触发。**iOS 13+ 要求 `requestPermission()` 且必须在安全上下文中调用，局域网 HTTP 页在 iPhone Safari 上会失败**，需自签 HTTPS 证书。按钮方案必须始终可用。
 
