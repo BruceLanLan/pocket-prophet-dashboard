@@ -1,0 +1,96 @@
+"""最小 Web 服务：摇卦按钮 + 设备在线状态。
+
+docs/PLAN.md Phase 2 步骤 2。绑定 0.0.0.0 以便手机访问局域网内的这台 Mac。
+"""
+import base64
+import logging
+
+from flask import Flask, jsonify, render_template, request
+
+import config
+import device
+from providers.liuyao import cast_hexagram
+from renderer import divination
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger("pocket-prophet")
+
+app = Flask(__name__)
+
+
+def _resolve_ip(cfg: dict):
+    """按配置的 IP 探活；失败且有 MAC 时按 PLAN.md 的 IP 漂移自愈逻辑找回。"""
+    ip = cfg.get("device_ip", "")
+    if not ip:
+        return None, None
+
+    info = device.info(ip)
+    if info is not None:
+        return ip, info
+
+    mac = cfg.get("device_mac", "")
+    if not mac:
+        return ip, None
+
+    new_ip = device.resolve_ip_by_mac(mac)
+    if new_ip and new_ip != ip:
+        log.info("设备 IP 已漂移: %s -> %s（按 MAC %s 找回）", ip, new_ip, mac)
+        config.update(device_ip=new_ip)
+        info = device.info(new_ip)
+        return new_ip, info
+
+    return ip, None
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/api/status")
+def api_status():
+    cfg = config.load()
+    ip, info = _resolve_ip(cfg)
+    return jsonify({
+        "configured": bool(ip),
+        "online": info is not None,
+        "ip": ip,
+        "wallpaper_info": info,
+    })
+
+
+@app.route("/api/divine", methods=["POST"])
+def api_divine():
+    cfg = config.load()
+    ip, info = _resolve_ip(cfg)
+
+    if not ip:
+        return jsonify({"ok": False, "reason": "not_configured", "hint": "尚未配置设备 IP"}), 400
+
+    cast = cast_hexagram()
+    img = divination.render(cast)
+
+    try:
+        converted = device.convert(img, kernel="THRESHOLD")
+    except device.ConvertError as e:
+        log.warning("转换失败: %s", e)
+        return jsonify({"ok": False, "reason": "convert_error", "hint": f"图片转换失败：{e}"}), 502
+
+    push_result = device.push(img, converted["array"], ip)
+
+    preview_b64 = base64.b64encode(converted["render_png"]).decode() if converted["render_png"] else None
+
+    return jsonify({
+        "cast": {
+            "本卦": cast["本卦"],
+            "变卦": cast["变卦"],
+            "动爻": cast["动爻"],
+            "判断": cast["判断"],
+        },
+        "push": push_result,
+        "preview_png_b64": preview_b64,
+    })
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5151, debug=False)

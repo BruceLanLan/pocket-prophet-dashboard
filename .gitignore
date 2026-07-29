@@ -2,3 +2,6 @@ out/
 __pycache__/
 *.pyc
 .venv/
+history/*.png
+config.json
+state.json
