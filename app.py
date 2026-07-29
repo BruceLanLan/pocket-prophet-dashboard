@@ -37,7 +37,7 @@ def _render_stocks(cfg: dict):
 PAGES = {
     "weather": ("天气", lambda cfg: weather.render(weather_provider.fetch(cfg["weather_city"]))),
     "stocks": ("行情", _render_stocks),
-    "news": ("要闻", lambda cfg: news.render(news_provider.fetch())),
+    "news": ("要闻", lambda cfg: news.render(news_provider.fetch(cfg.get("news_sources")))),
     "usage": ("用量", lambda cfg: usage.render(ccusage.summarize())),
     "qimen": ("奇门遁甲", lambda cfg: qimen.render(qimen_provider.cast())),
 }

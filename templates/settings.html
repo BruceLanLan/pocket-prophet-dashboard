@@ -27,6 +27,14 @@ input[type=text]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;borde
 .checkrow{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px}
 input[type=number]{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:12px;background:#fbfaf7;color:#1d1d1f;font-size:15px;padding:12px}
 select{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:12px;background:#fbfaf7;color:#1d1d1f;font-size:15px;padding:12px}
+.srcrow{display:flex;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid #f0ede6}
+.srcrow:last-child{border-bottom:none}
+.srcrow .srcfields{flex:1;display:flex;flex-direction:column;gap:4px}
+.srcrow input[type=text]{padding:8px;font-size:13px}
+.srcrow .srcname{font-weight:600}
+.srcbtn{background:#ebe7df;color:#4b4035;border:0;border-radius:8px;width:28px;height:28px;font-size:14px;cursor:pointer;flex-shrink:0}
+.srcbtn.del{background:#fdecea;color:#d70015}
+.addsrc{width:100%;background:#ebe7df;color:#4b4035;padding:12px;text-align:center;border:0;border-radius:12px;font-size:14px;cursor:pointer;margin-top:10px}
 </style>
 </head>
 <body>
@@ -61,6 +69,17 @@ select{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:1
 </div>
 
 <div class="card">
+  <h1 style="font-size:17px;margin-top:0">📰 要闻源</h1>
+  <div class="field hint" style="margin-top:-8px">
+    支持任意公开 RSS 2.0 / Atom 地址；地址填 <code>toutiao</code> 表示用今日头条热榜。排在前面的源优先填满显示条数。
+  </div>
+  <div id="newsSourcesList"></div>
+  <button class="addsrc" onclick="addNewsSource()">+ 添加源</button>
+  <button class="btn" onclick="saveConfig()" style="margin-top:14px">保存</button>
+  <div id="msg3"></div>
+</div>
+
+<div class="card">
   <h1 style="font-size:17px;margin-top:0">🔁 自动推送（停驻模式）</h1>
   <div class="field switch">
     <label style="margin:0">布防（开启后按周期自动推送）</label>
@@ -85,7 +104,40 @@ select{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:1
   <div id="msg2"></div>
 </div>
 
-<script>
+let newsSources = [];
+
+function renderNewsSources(){
+  const box = document.getElementById('newsSourcesList');
+  box.innerHTML = newsSources.map((s, i) => `
+    <div class="srcrow">
+      <div class="srcfields">
+        <input type="text" class="srcname" value="${(s.name||'').replace(/"/g,'&quot;')}" placeholder="源名称" oninput="newsSources[${i}].name=this.value">
+        <input type="text" value="${(s.url||'').replace(/"/g,'&quot;')}" placeholder="RSS/Atom 地址，或 toutiao" oninput="newsSources[${i}].url=this.value">
+      </div>
+      <button class="srcbtn" onclick="moveNewsSource(${i},-1)" ${i===0?'disabled':''}>↑</button>
+      <button class="srcbtn" onclick="moveNewsSource(${i},1)" ${i===newsSources.length-1?'disabled':''}>↓</button>
+      <button class="srcbtn del" onclick="removeNewsSource(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addNewsSource(){
+  newsSources.push({name: '', url: ''});
+  renderNewsSources();
+}
+
+function removeNewsSource(i){
+  newsSources.splice(i, 1);
+  renderNewsSources();
+}
+
+function moveNewsSource(i, delta){
+  const j = i + delta;
+  if(j < 0 || j >= newsSources.length) return;
+  [newsSources[i], newsSources[j]] = [newsSources[j], newsSources[i]];
+  renderNewsSources();
+}
+
 async function loadConfig(){
   const r = await fetch('/api/config');
   const cfg = await r.json();
@@ -94,6 +146,8 @@ async function loadConfig(){
   document.getElementById('weather_city').value = cfg.weather_city || '';
   document.getElementById('stock_symbols').value = (cfg.stock_symbols || []).join(', ');
   document.getElementById('stocks_view').value = cfg.stocks_view || 'overview';
+  newsSources = (cfg.news_sources || []).map(s => ({name: s.name || '', url: s.url || ''}));
+  renderNewsSources();
   document.getElementById('auto_push_enabled').checked = !!cfg.auto_push_enabled;
   document.getElementById('auto_push_interval_minutes').value = cfg.auto_push_interval_minutes || 10;
   const pages = new Set(cfg.auto_push_pages || []);
@@ -109,6 +163,7 @@ async function saveConfig(){
     stock_symbols: document.getElementById('stock_symbols').value
       .split(',').map(s => s.trim()).filter(Boolean),
     stocks_view: document.getElementById('stocks_view').value,
+    news_sources: newsSources.filter(s => s.url.trim()).map(s => ({name: s.name.trim() || s.url.trim(), url: s.url.trim()})),
     auto_push_enabled: document.getElementById('auto_push_enabled').checked,
     auto_push_interval_minutes: Math.max(5, parseInt(document.getElementById('auto_push_interval_minutes').value) || 10),
     auto_push_pages: pages,
@@ -123,6 +178,7 @@ async function saveConfig(){
     if(r.ok){
       msg.innerHTML = '<div class="msg ok">已保存</div>';
       document.getElementById('msg2').innerHTML = '<div class="msg ok">已保存</div>';
+      document.getElementById('msg3').innerHTML = '<div class="msg ok">已保存</div>';
     } else {
       msg.innerHTML = '<div class="msg err">保存失败</div>';
     }
