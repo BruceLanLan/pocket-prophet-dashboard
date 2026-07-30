@@ -64,6 +64,11 @@ select{width:100%;box-sizing:border-box;border:1px solid #e3ded5;border-radius:1
       <option value="detail">详情（清单第一只占满整屏）</option>
     </select>
   </div>
+  <div class="field">
+    <label>每日 token 预算（百万，自设，不是官方额度）</label>
+    <input type="number" id="usage_budget_millions" min="1" step="1">
+    <div class="hint">用量页的百分比是"今日消耗 / 这个预算"，不是官方订阅额度——那个数据本地拿不到</div>
+  </div>
   <button class="btn" onclick="saveConfig()">保存</button>
   <div id="msg"></div>
 </div>
@@ -146,6 +151,7 @@ async function loadConfig(){
   document.getElementById('weather_city').value = cfg.weather_city || '';
   document.getElementById('stock_symbols').value = (cfg.stock_symbols || []).join(', ');
   document.getElementById('stocks_view').value = cfg.stocks_view || 'overview';
+  document.getElementById('usage_budget_millions').value = Math.round((cfg.usage_daily_budget_tokens || 200000000) / 1000000);
   newsSources = (cfg.news_sources || []).map(s => ({name: s.name || '', url: s.url || ''}));
   renderNewsSources();
   document.getElementById('auto_push_enabled').checked = !!cfg.auto_push_enabled;
@@ -163,6 +169,7 @@ async function saveConfig(){
     stock_symbols: document.getElementById('stock_symbols').value
       .split(',').map(s => s.trim()).filter(Boolean),
     stocks_view: document.getElementById('stocks_view').value,
+    usage_daily_budget_tokens: Math.max(1, parseInt(document.getElementById('usage_budget_millions').value) || 200) * 1000000,
     news_sources: newsSources.filter(s => s.url.trim()).map(s => ({name: s.name.trim() || s.url.trim(), url: s.url.trim()})),
     auto_push_enabled: document.getElementById('auto_push_enabled').checked,
     auto_push_interval_minutes: Math.max(5, parseInt(document.getElementById('auto_push_interval_minutes').value) || 10),

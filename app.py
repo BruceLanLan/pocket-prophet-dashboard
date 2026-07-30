@@ -38,7 +38,7 @@ PAGES = {
     "weather": ("天气", lambda cfg: weather.render(weather_provider.fetch(cfg["weather_city"]))),
     "stocks": ("行情", _render_stocks),
     "news": ("要闻", lambda cfg: news.render(news_provider.fetch(cfg.get("news_sources")))),
-    "usage": ("用量", lambda cfg: usage.render(ccusage.summarize())),
+    "usage": ("用量", lambda cfg: usage.render(ccusage.summarize(), cfg.get("usage_daily_budget_tokens"))),
     "qimen": ("奇门遁甲", lambda cfg: qimen.render(qimen_provider.cast())),
 }
 
@@ -85,7 +85,7 @@ def api_config():
     body = request.get_json(force=True, silent=True) or {}
     allowed = {
         "device_ip", "device_mac", "weather_city", "stock_symbols", "stocks_view", "news_sources", "enabled_pages",
-        "auto_push_enabled", "auto_push_interval_minutes", "auto_push_pages",
+        "auto_push_enabled", "auto_push_interval_minutes", "auto_push_pages", "usage_daily_budget_tokens",
     }
     updates = {k: v for k, v in body.items() if k in allowed}
     cfg = config.update(**updates)

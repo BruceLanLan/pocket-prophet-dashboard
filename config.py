@@ -17,9 +17,10 @@ DEFAULTS = {
     "stocks_view": "overview",  # "overview"(多只概览) 或 "detail"(单只详情，取清单第一只)
     # Phase 11：默认清单，每一条都实测过是活的、有当日/近日条目
     # （教训：新浪滚动新闻 RSS 早已废弃过，见 docs/PLAN-v2.md Phase 11）。
-    # 头条放最后：抓取逻辑是"排在前面的源优先填满显示条数"，头条热榜
-    # 条目多、几乎总能单独填满全部名额，放第一会让 solidot/少数派配了也
-    # 白配、永远露不出来——放最后当兜底，缺口才轮到它补。
+    # 抓取是轮流取（round-robin），顺序决定的是"每一轮谁先取、余数给谁"，
+    # 不是"谁能把名额占满"（早期版本是顺序填满，头条/solidot 随便一个
+    # 排第一都会把另外两个源直接挤没，已改掉，见 providers/news.py）。
+    # 头条放最后，把余数留给它兜底，前两个更有内容深度的源优先露出。
     "news_sources": [
         {"name": "奇客Solidot", "url": "https://www.solidot.org/index.rss"},
         {"name": "少数派", "url": "https://sspai.com/feed"},
@@ -32,6 +33,10 @@ DEFAULTS = {
     "auto_push_interval_minutes": 10,
     "auto_push_pages": ["weather", "stocks", "news", "usage"],  # 不含摇卦，见 PLAN-v2.md Phase 7
     "_auto_push_last_page": None,  # 内部轮换状态，不暴露给设置页
+    # Phase 12：用户自设的每日 token 预算，不是官方额度（本地拿不到，
+    # 见 ARCHITECTURE.md §4.2）。渲染时必须把这个数字本身也画出来，
+    # 让人一眼看出百分比是相对这个自设基准算的，不是官方口径。
+    "usage_daily_budget_tokens": 200_000_000,
 }
 
 
