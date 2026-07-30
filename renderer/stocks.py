@@ -47,8 +47,19 @@ def _fmt_volume(v):
     return str(v)
 
 
+SECONDARY_LINE_MIN_BLOCK_H = 55  # 低于这个块高就不加成交量/今日区间那一行，
+                                  # 优先保住走势线的可读性（清单越长块越矮）
+
+
 def render(quotes: list):
-    """多只概览：每只一行 + 各自的分时线。"""
+    """多只概览：每只一行 + 各自的分时线。
+
+    早期版本只有 符号/现价/涨跌% 一行 + 一条光走势线，用户反馈"显示的内容
+    很空"——留白确实多：走势线没有任何数值参照，块高够大时也没利用多出来
+    的空间。块高够大（n<=2，两只股票时最明显）时现在会加一行紧凑信息
+    （今日区间 + 成交量）；清单变长、块变矮时才退回原来的极简版式，
+    优先保住走势线本身的可读性而不是硬塞文字。
+    """
     img = new_canvas(bg=WHITE)
     draw = ImageDraw.Draw(img)
 
@@ -61,6 +72,7 @@ def render(quotes: list):
         return img
 
     block_h = (CONTENT_Y1 - CONTENT_Y0) / n
+    show_secondary = block_h >= SECONDARY_LINE_MIN_BLOCK_H
     f = font(13)
 
     for i, q in enumerate(shown):
@@ -71,9 +83,21 @@ def render(quotes: list):
         sign = "+" if q["change_pct"] >= 0 else ""
         draw.text((140, y_block), f"{sign}{q['change_pct']:.2f}%", font=f, fill=gray(BLACK))
 
-        chart_y0 = y_block + HEADER_LINE_H
+        y_cursor = y_block + HEADER_LINE_H
+        if show_secondary:
+            lo_c, hi_c = (min(q["closes"]), max(q["closes"])) if q["closes"] else (None, None)
+            parts = []
+            if lo_c is not None:
+                parts.append(f"今日 {lo_c:.1f}-{hi_c:.1f}")
+            if q.get("volume") is not None:
+                parts.append(f"量 {_fmt_volume(q['volume'])}")
+            if parts:
+                draw.text((8, y_cursor), "  ".join(parts), font=f, fill=gray(DARK_GRAY))
+            y_cursor += 16
+
+        chart_y0 = y_cursor
         chart_y1 = y_block + block_h - BLOCK_GAP
-        if q["closes"]:
+        if q["closes"] and chart_y1 - chart_y0 >= 10:
             _draw_sparkline(draw, q["closes"], chart_y0, chart_y1)
 
     draw.text(

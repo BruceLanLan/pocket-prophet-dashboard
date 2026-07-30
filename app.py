@@ -31,9 +31,11 @@ def _render_stocks(cfg: dict):
     return stocks.render(quotes)
 
 
-# 配置驱动的内容页：page key -> (中文名, cfg -> PIL.Image)。摇卦不在这里——
-# 它是每次随机的一次性动作，"预览不推送"这个概念对它不适用，走独立的
-# /api/divine（见下方，Phase 2 已验证过真机）。
+# 配置驱动的内容页：page key -> (中文名, cfg -> PIL.Image)。奇门遁甲仍在
+# 这里——自动推送轮换和 /api/preview 还是要用到它的渲染函数——但首页不再
+# 走这个表的通用预览/推送 UI，而是跟摇卦一样有自己的独立按钮和结果展示
+# （见下方 /api/qimen），因为用户明确要求把它当独立功能对待。摇卦则完全
+# 不在这里：它是每次随机的一次性动作，连"轮换推送"都不适用。
 PAGES = {
     "weather": ("天气", lambda cfg: weather.render(weather_provider.fetch(cfg["weather_city"]))),
     "stocks": ("行情", _render_stocks),
@@ -190,6 +192,41 @@ def api_divine():
             "变卦": cast["变卦"],
             "动爻": cast["动爻"],
             "判断": cast["判断"],
+        },
+        "push": push_result,
+        "preview_png_b64": preview_b64,
+    })
+
+
+@app.route("/api/qimen", methods=["POST"])
+def api_qimen():
+    """奇门遁甲独立入口（首页顶部按钮），跟摇卦同级——用户明确要求把它当
+    独立功能提到最上面，而不是塞在通用的预览/推送列表里。跟 /api/divine
+    结构一致：起盘 + 转换 + 推送一步到位，返回结构化结果供前端展示。"""
+    cfg = config.load()
+    ip, info = _resolve_ip(cfg)
+
+    if not ip:
+        return jsonify({"ok": False, "reason": "not_configured", "hint": "尚未配置设备 IP"}), 400
+
+    cast = qimen_provider.cast()
+    img = qimen.render(cast)
+
+    try:
+        converted = device.convert(img, kernel="THRESHOLD")
+    except device.ConvertError as e:
+        log.warning("转换失败: %s", e)
+        return jsonify({"ok": False, "reason": "convert_error", "hint": f"图片转换失败：{e}"}), 502
+
+    push_result = device.push(img, converted["array"], ip)
+    preview_b64 = base64.b64encode(converted["render_png"]).decode() if converted["render_png"] else None
+
+    return jsonify({
+        "cast": {
+            "局": cast["ju"],
+            "时柱": cast["shi_zhu"],
+            "值符星": cast["zhi_fu_star"],
+            "值符宫": cast["zhi_fu_gong"],
         },
         "push": push_result,
         "preview_png_b64": preview_b64,

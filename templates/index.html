@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>口袋先知 · 摇卦</title>
+<title>口袋先知</title>
 <style>
 body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#f5f3ee;color:#1d1d1f;margin:0;padding:18px;max-width:480px;margin-left:auto;margin-right:auto}
 h1{font-size:22px;margin:4px 0 14px}
@@ -50,6 +50,11 @@ h1{font-size:22px;margin:4px 0 14px}
 </div>
 
 <div class="card">
+  <button class="btn" id="qimenBtn" onclick="doQimen()">🔯 起一盘奇门遁甲</button>
+  <div class="result" id="qimenResult" style="display:none"></div>
+</div>
+
+<div class="card">
   <div class="pagerow">
     <span class="label">🌤️ 天气</span>
     <div class="actions">
@@ -76,13 +81,6 @@ h1{font-size:22px;margin:4px 0 14px}
     <div class="actions">
       <button class="smallbtn" onclick="previewPage('usage')">预览</button>
       <button class="smallbtn primary" onclick="pushPage('usage')">推送</button>
-    </div>
-  </div>
-  <div class="pagerow">
-    <span class="label">🔯 奇门遁甲</span>
-    <div class="actions">
-      <button class="smallbtn" onclick="previewPage('qimen')">预览</button>
-      <button class="smallbtn primary" onclick="pushPage('qimen')">推送</button>
     </div>
   </div>
   <div class="pagepreview" id="pagePreview" style="display:none"></div>
@@ -158,6 +156,54 @@ async function divine(){
   }finally{
     btn.disabled = false;
     btn.textContent = '摇卦';
+    refreshStatus();
+  }
+}
+
+async function doQimen(){
+  const btn = document.getElementById('qimenBtn');
+  const result = document.getElementById('qimenResult');
+  btn.disabled = true;
+  btn.textContent = '起盘中…';
+  result.style.display = 'none';
+
+  try{
+    const r = await fetch('/api/qimen', {method:'POST'});
+    const j = await r.json();
+
+    if(!r.ok){
+      result.innerHTML = `<div class="pushmsg err">${j.hint || '请求失败'}</div>`;
+      result.style.display = 'block';
+      return;
+    }
+
+    const c = j.cast;
+    let pushHtml;
+    if(j.push.ok && !j.push.skipped){
+      pushHtml = `<div class="pushmsg ok">已推送到设备</div>`;
+    } else if(j.push.ok && j.push.skipped){
+      pushHtml = `<div class="pushmsg skip">内容与设备当前显示相同，未重复推送</div>`;
+    } else {
+      pushHtml = `<div class="pushmsg err">${j.push.hint || '推送失败'}</div>`;
+    }
+
+    const img = j.preview_png_b64
+      ? `<img src="data:image/png;base64,${j.preview_png_b64}" alt="奇门遁甲预览">`
+      : '';
+
+    result.innerHTML = `
+      ${img}
+      <div class="hexname">${c['局']}</div>
+      <div class="judge">值符：${c['值符星']}（${c['值符宫']}宫）· 时柱 ${c['时柱']}</div>
+      ${pushHtml}
+    `;
+    result.style.display = 'block';
+  }catch(e){
+    result.innerHTML = `<div class="pushmsg err">网络错误：${e}</div>`;
+    result.style.display = 'block';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '🔯 起一盘奇门遁甲';
     refreshStatus();
   }
 }
