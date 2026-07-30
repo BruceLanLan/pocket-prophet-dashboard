@@ -3,10 +3,9 @@
 奇门遁甲排盘引擎 v2.0 — 九星 / 八神 / 八门 / 三盘 / 终身局 / 财富信号
 #[v2.0] 完全重写版
 
-原样复制自用户自有的 mingli-skill 项目
-（~/.agents/skills/mingli/scripts/qimen_engine.py，同一作者的私有仓库）。
-整份复制而非跨仓库引用一个只在这台机器上存在的绝对路径，是为了让
-pocket-prophet-dashboard 能被独立 clone、独立跑起来（README 的前提）。
+原样复制自同一作者的另一个命理相关项目。整份复制而非跨仓库引用一个
+只在开发机上存在的绝对路径，是为了让 pocket-prophet-dashboard 能被
+独立 clone、独立跑起来（README 的前提）。
 """
 
 import math

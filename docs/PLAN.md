@@ -32,7 +32,7 @@
 6. **不要复用 `meihua_engine.py` 的生克判断逻辑**（有 bug，见 ARCHITECTURE.md §4.3），静态数据表可以复用。
 7. **不要在本期做纳甲装卦**，也不要启动 `COMPRESS_ARRAY_V2` 编码器逆向，二者均在范围外。
 8. **不要做"设备出现即自动推送"的探测器**（理由见 ARCHITECTURE.md §3.1 末尾：设备出现的那一刻恰恰可能是用户想用官方页面传自己的图，自动推送会覆盖用户的操作）。
-9. 设备 IP 必须是配置项，不允许硬编码 `192.168.3.235`。
+9. 设备 IP 必须是配置项，不允许硬编码 `192.168.x.x（开发机实测的具体地址）`。
 
 ---
 
@@ -94,7 +94,7 @@
    - 验证点：设备离线时调 `push`，在 8 秒内返回明确的"设备不可达"结果，且不抛裸异常
 2. **设备不可达是常态，不是异常**。所有对外提示必须可操作，统一文案示例："设备当前不在线，请先在设备上打开'更换壁纸'界面"
    - 验证点：设备离线时从 Web 界面点推送，页面显示上述提示而非 500 错误页或连接超时堆栈
-3. **IP 漂移自愈**：设备无 mDNS 主机名、无反向 DNS（已实测），唯一稳定标识是 MAC（本机为 `58:2a:bd:0a:98:c8`，随硬件不同）。配置同时存 `device_ip` 与 `device_mac`；探活失败时执行 `arp -a`，找 MAC 匹配行解析出新 IP，更新配置后重试一次
+3. **IP 漂移自愈**：设备无 mDNS 主机名、无反向 DNS（已实测），唯一稳定标识是 MAC（本机为 `xx:xx:xx:xx:xx:xx（开发机实测的具体地址）`，随硬件不同）。配置同时存 `device_ip` 与 `device_mac`；探活失败时执行 `arp -a`，找 MAC 匹配行解析出新 IP，更新配置后重试一次
    - 验证点：手动把配置里的 IP 改错，在设备在线时触发推送，日志显示"IP 已更新"并推送成功
 4. 实现 `renderer/base.py`：画布常量（200×200）、四级灰阶调色板 `{0,85,170,255}`、字体加载（`/System/Library/Fonts/STHeiti Medium.ttc`）、按字宽截断、分隔线等原语
    - 验证点：绘制含 13px 中文的测试图，解码 `COMPRESS_RENDER` 后目视可读
@@ -117,7 +117,7 @@
 1. `providers/liuyao.py`：纯计算模块，三枚铜钱抛六次
    - **用 `secrets` 而非 `random`**
    - 输出：六爻（老阴/少阳/少阴/老阳）、本卦、变卦、动爻位置
-   - 可复用 `~/.agents/skills/mingli/scripts/meihua_engine.py` 的 `HEXAGRAM_NAMES`、`NUM_BA_GUA`、`GUA_WUXING`、`GUA_READING` 四张静态表（`GUA_READING` 完整覆盖 64 卦，可直接当短判断文案用，见步骤 5）；**不要复用其生克逻辑**（该处两个分支条件写成了等价表达式，第二支永远不可达）
+   - 可复用作者另一个命理项目里 `meihua_engine.py` 的 `HEXAGRAM_NAMES`、`NUM_BA_GUA`、`GUA_WUXING`、`GUA_READING` 四张静态表（`GUA_READING` 完整覆盖 64 卦，可直接当短判断文案用，见步骤 5）；**不要复用其生克逻辑**（该处两个分支条件写成了等价表达式，第二支永远不可达）
    - 验证点：起卦 10000 次，各爻的老阴/少阳/少阴/老阳分布接近 1:3:3:1（三钱法理论分布），打印实际统计
 2. 最小 Web 服务（Flask 或 FastAPI）：一个页面、一个"摇卦"按钮、一个设备在线状态指示
    - 绑定 `0.0.0.0` 以便手机访问
@@ -167,7 +167,7 @@
 
 ## Phase 5 — Claude Code token 消耗页
 
-1. `providers/ccusage.py`：解析 `$CLAUDE_CONFIG_DIR/projects/**/*.jsonl`（`CLAUDE_CONFIG_DIR` 未设时回落 `~/.claude`；本机实测为 `/Users/bruce/.claude-opus`，365 个文件、229MB）
+1. `providers/ccusage.py`：解析 `$CLAUDE_CONFIG_DIR/projects/**/*.jsonl`（`CLAUDE_CONFIG_DIR` 未设时回落 `~/.claude`；开发机上该变量被设成了非默认路径，实测该路径下 365 个文件、229MB）
    - **必须按 `(message.id, requestId)` 去重**（实测存在同一消息重复写入，两条记录 token 完全相同）
    - **必须增量解析**：按文件 mtime + 已读偏移缓存，229MB 全量扫描不能每次推送都跑
    - 输出：今日 token 总量、最近 5 小时滚动窗口 token、按模型拆分、等价 API 成本

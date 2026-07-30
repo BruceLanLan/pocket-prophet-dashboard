@@ -1,10 +1,11 @@
 """64-hexagram static reference tables.
 
-Copied from ~/.agents/skills/mingli/scripts/meihua_engine.py (a separate,
-private project — not a dependency of this repo, so the tables are copied
-rather than imported). Only the static data is reused; the divination logic
-here is written from scratch, per docs/PLAN.md Phase 2 step 1, which flags
-a bug in that file's generation/control (克/生) branching.
+Copied from the same author's meihua_engine.py, a separate divination
+project of theirs that isn't a dependency of this repo, so the tables are
+copied here rather than imported. Only the static data is reused; the
+divination logic here is written from scratch, per docs/PLAN.md Phase 2
+step 1, which flags a bug in that file's generation/control (克/生)
+branching.
 
 GUA_READING covers the full 64 name-pairs (verified by full read on
 2026-07-29 — an earlier note claiming it covered only ~10 was a partial-read

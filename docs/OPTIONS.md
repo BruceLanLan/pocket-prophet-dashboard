@@ -98,7 +98,7 @@
 
 这一条不是技术方案，是范围判断，但可能是最省力的答案。
 
-你本地已有 **`~/m5-paper-buddy`** 项目（M5Paper V1.1，ESP32 + 墨水屏，PlatformIO 工程）。对比两台设备的适配度：
+作者已有一台 M5Paper V1.1（ESP32 + 墨水屏，配套 PlatformIO 工程）。对比两台设备的适配度：
 
 | 需求 | 口袋先知 | M5Paper |
 |---|---|---|
@@ -240,7 +240,7 @@ strings firmware_backup.bin | grep -iE 'http|mindreset|wallpaper|ota'
 
 ### 路线 B：完全重写固件
 
-把它当成一块空白的 ESP32 + 墨水屏，用 PlatformIO/Arduino 写自己的固件——你在 `m5-paper-buddy` 上已有这套经验。
+把它当成一块空白的 ESP32 + 墨水屏，用 PlatformIO/Arduino 写自己的固件——作者在自己的 M5Paper 项目上已有这套经验。
 
 **技术上比路线 A 容易得多，但代价是原厂功能全部消失。**
 

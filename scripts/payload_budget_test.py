@@ -2,12 +2,14 @@
 import base64
 import io
 import json
+import os
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
 W = H = 200
 CONVERT = "https://dot.mindreset.tech/api/authV2/device/render/convert"
 FONT = "/System/Library/Fonts/STHeiti Medium.ttc"
+OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "out")
 
 def font(sz):
     return ImageFont.truetype(FONT, sz)
@@ -99,5 +101,6 @@ for name, img in cases:
         print(f"{name:<20} {kernel:<18} {n:>8} {verdict:>10} ({n*100//CAP}%)")
         results[f"{name}|{kernel}"] = n
 
-with open("/private/tmp/claude-501/-Users-bruce/c853be6a-bb12-4c22-8504-0cc90a372a85/scratchpad/budget_results.json", "w") as f:
+os.makedirs(OUT_DIR, exist_ok=True)
+with open(os.path.join(OUT_DIR, "budget_results.json"), "w") as f:
     json.dump(results, f, indent=2)

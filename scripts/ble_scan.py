@@ -20,11 +20,11 @@ try:
 except ImportError:
     sys.exit("缺少依赖，请先运行：pip3 install --user bleak")
 
-# 设备的 WiFi 侧 MAC，仅作参考。ESP32 的 BLE MAC 通常与 WiFi MAC
-# 相差一个小偏移（常见 +1/+2），所以留意接近的地址。
-# macOS 出于隐私不暴露 BLE 设备的真实 MAC，只给随机 UUID，
-# 因此主要靠名称、厂商数据和信号强度来辨认。
-WIFI_MAC = "58:2a:bd:0a:98:c8"
+# 设备的 WiFi 侧 MAC，仅作参考——填你自己设备在 /settings 页看到的那个。
+# ESP32 的 BLE MAC 通常与 WiFi MAC 相差一个小偏移（常见 +1/+2），
+# 所以留意接近的地址。macOS 出于隐私不暴露 BLE 设备的真实 MAC，
+# 只给随机 UUID，因此主要靠名称、厂商数据和信号强度来辨认。
+WIFI_MAC = ""  # 例如 "aa:bb:cc:11:22:33"
 
 KEYWORDS = ["rand", "pocket", "prophet", "ink", "epd", "mind", "dot", "先知", "esp"]
 

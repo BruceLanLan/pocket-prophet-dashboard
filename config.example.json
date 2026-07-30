@@ -1,8 +1,17 @@
 {
   "device_ip": "192.168.1.100",
-  "device_mac": "58:2a:bd:0a:98:c8",
+  "device_mac": "aa:bb:cc:11:22:33",
   "enabled_pages": ["divination"],
   "weather_city": "深圳",
   "stock_symbols": ["AAPL", "NVDA"],
-  "news_sources": []
+  "stocks_view": "overview",
+  "news_sources": [
+    {"name": "奇客Solidot", "url": "https://www.solidot.org/index.rss"},
+    {"name": "少数派", "url": "https://sspai.com/feed"},
+    {"name": "今日头条", "url": "toutiao"}
+  ],
+  "auto_push_enabled": false,
+  "auto_push_interval_minutes": 10,
+  "auto_push_pages": ["weather", "stocks", "news", "usage"],
+  "usage_daily_budget_tokens": 200000000
 }
