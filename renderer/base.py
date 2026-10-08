@@ -8,6 +8,19 @@
 import os
 
 from PIL import Image, ImageDraw, ImageFont
+import platform
+def _get_font_path() -> str:
+    system = platform.system()
+    if system == "Darwin":
+        # macOS 苹方（比 STHeiti 更现代）
+        return "/System/Library/Fonts/PingFang.ttc"
+    elif system == "Windows":
+        # Windows 微软雅黑
+        return "C:/Windows/Fonts/msyh.ttc"
+    else:
+        # Linux 文泉驿微米黑（需提前安装：sudo apt install fonts-wqy-microhei）
+        return "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"
+
 
 WIDTH = HEIGHT = 200
 
@@ -16,10 +29,12 @@ DARK_GRAY = 85
 LIGHT_GRAY = 170
 WHITE = 255
 
-FONT_PATH = "/System/Library/Fonts/STHeiti Medium.ttc"
+FONT_PATH = _get_font_path()
 MIN_FONT_SIZE = 13
 
 _font_cache = {}
+
+
 
 
 def font(size: int) -> ImageFont.FreeTypeFont:

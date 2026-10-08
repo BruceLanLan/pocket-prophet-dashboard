@@ -44,7 +44,7 @@ def load() -> dict:
     cfg = dict(DEFAULTS)
     if os.path.exists(CONFIG_PATH):
         try:
-            with open(CONFIG_PATH) as f:
+            with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
                 cfg.update(json.load(f))
         except (json.JSONDecodeError, OSError):
             pass
@@ -52,7 +52,7 @@ def load() -> dict:
 
 
 def save(cfg: dict):
-    with open(CONFIG_PATH, "w") as f:
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
         json.dump(cfg, f, indent=2, ensure_ascii=False)
 
 
